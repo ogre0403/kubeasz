@@ -14,27 +14,30 @@ echo "\n注意2：如果还没有手工下载tar包，请Ctrl-c结束此脚本"
 
 echo "\n----download k8s binary at:"
 echo https://dl.k8s.io/${K8S_VER}/kubernetes-server-linux-amd64.tar.gz
+wget https://dl.k8s.io/${K8S_VER}/kubernetes-server-linux-amd64.tar.gz
 
 echo "\n----download etcd binary at:"
 echo https://github.com/coreos/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz
+wget https://github.com/coreos/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz
 echo https://storage.googleapis.com/etcd/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz
 
 echo "\n----download docker binary at:"
-echo https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz
+wget https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz
 
 echo "\n----download ca tools at:"
-echo https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-echo https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-echo https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
 
 echo "\n----download docker-compose at:"
-echo https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE}/docker-compose-Linux-x86_64
+wget https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE}/docker-compose-Linux-x86_64
 
 echo "\n----download harbor-offline-installer at:"
 echo https://github.com/vmware/harbor/releases/download/${HARBOR}/harbor-offline-installer-${HARBOR}.tgz
 
 echo "\n----download cni plugins at:"
 echo https://github.com/containernetworking/plugins/releases
+wget https://github.com/containernetworking/plugins/releases/download/v0.7.0/cni-plugins-amd64-v0.7.0.tgz
 
 sleep 30
 
@@ -96,9 +99,9 @@ fi
 
 ### 准备cni plugins，仅安装flannel需要，安装calico由容器专门下载cni plugins 
 echo "\n准备cni plugins，仅安装flannel需要，安装calico由容器专门下载cni plugins..."
-if [ -f "cni-${CNI_VER}.tgz" ]; then
+if [ -f "cni-plugins-amd64-${CNI_VER}.tgz" ]; then
   echo "\nextracting cni plugins binaries..."
-  tar zxf cni-${CNI_VER}.tgz
+  tar zxf cni-plugins-amd64-${CNI_VER}.tgz
   mv -f bridge ../bin
   mv -f flannel ../bin
   mv -f host-local ../bin
