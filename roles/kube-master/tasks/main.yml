@@ -4,24 +4,19 @@
   - kube-apiserver
   - kube-controller-manager
   - kube-scheduler
-  - kubectl
-  - kube-proxy
-  - kubelet
 
-# 注册变量result，根据result结果判断是否已经生成过 kubernetes证书
-# result|failed 说明没有生成过证书，下一步生成证书
-# result|succeeded 说明已经有kubernetes证书，使用原证书，跳过生成证书步骤
-- name: 注册变量result
-  command: ls /etc/kubernetes/ssl/kubernetes.pem
-  register: result
-  ignore_errors: True
+# 注册变量p，根据p的stat信息判断是否已经生成过kubernetes证书，如果没有，下一步生成证书
+# 如果已经有证书，为了保证整个安装的幂等性，跳过证书生成的步骤
+- name: 读取kubernetes证书stat信息
+  stat: path="/etc/kubernetes/ssl/kubernetes.pem"
+  register: p
 
 - name: 创建 kubernetes 证书签名请求
   template: src=kubernetes-csr.json.j2 dest={{ ca_dir }}/kubernetes-csr.json
-  when: result|failed
+  when: p.stat.isreg is not defined
 
 - name: 创建 kubernetes 证书和私钥
-  when: result|failed
+  when: p.stat.isreg is not defined
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert \
         -ca={{ ca_dir }}/ca.pem \
         -ca-key={{ ca_dir }}/ca-key.pem \
@@ -43,23 +38,17 @@
 - name: 创建kube-scheduler的systemd unit文件
   template: src=kube-scheduler.service.j2 dest=/etc/systemd/system/kube-scheduler.service
 
-- name: daemon-reload
-  shell: systemctl daemon-reload
+- name: enable master 服务
+  shell: systemctl enable kube-apiserver kube-controller-manager kube-scheduler
 
-- name: enable-kube-apiserver
-  shell: systemctl enable kube-apiserver
+- name: 启动 master 服务
+  shell: "systemctl daemon-reload && systemctl restart kube-apiserver && \
+	systemctl restart kube-controller-manager && systemctl restart kube-scheduler"
 
-- name: enable-kube-controller-manager
-  shell: systemctl enable kube-controller-manager
-
-- name: enable-kube-scheduler
-  shell: systemctl enable kube-scheduler
-
-- name: start-kube-apiserver
-  shell: systemctl restart kube-apiserver
-
-- name: start-kube-controller-manager
-  shell: systemctl restart kube-controller-manager
-
-- name: start-kube-scheduler
-  shell: systemctl restart kube-scheduler
+- name: 以轮询的方式等待master服务启动完成
+  command: "{{ bin_dir }}/kubectl get node"
+  register: result
+  until:    result.rc == 0
+  retries:  5
+  delay: 6
+  run_once: True

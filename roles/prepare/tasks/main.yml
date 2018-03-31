@@ -6,22 +6,23 @@
   - /root/.kube
   - /etc/docker
 
-#- name: 集群hosts文件更新
-#  copy: src=hosts.j2 dest=/etc/hosts
-
 - name: 写入环境变量$PATH 
   shell: "sed -i '/export PATH=/d' /etc/profile && \
 	echo export PATH={{ bin_dir }}:$PATH >> /etc/profile"
 
-- name: 下载证书工具 CFSSL
+- name: 下载证书工具 CFSSL和 kubectl
   copy: src={{ base_dir }}/bin/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
   with_items:
   - cfssl
   - cfssl-certinfo
   - cfssljson
+  - kubectl
+
+- name: 安装kubeconfig配置文件
+  copy: src=/root/.kube/config dest=/root/.kube/config
 
 - name: 分发CA 证书
-  copy: src={{ item }} dest={{ ca_dir }}/{{ item }} mode=0644
+  copy: src={{ ca_dir }}/{{ item }} dest={{ ca_dir }}/{{ item }} mode=0644
   with_items:
   - ca.pem
   - ca-key.pem
@@ -43,19 +44,42 @@
   - lxcfs
   - lxc-common
 
-# 删除默认安装
-- name: 删除centos默认安装
-  when: ansible_distribution == "CentOS"
-  yum: name={{ item }} state=absent
+# Ubuntu 安装基础软件包
+- name: 安装 ubuntu基础软件
+  when: ansible_distribution == "Ubuntu"
+  apt: name={{ item }} state=latest
   with_items:
-  - firewalld
-  - firewalld-filesystem
-  - python-firewall
+  - jq                  # 轻量JSON处理程序，安装docker查询镜像需要
+  - nfs-common          # 挂载nfs 共享文件需要 (创建基于 nfs的PV 需要)
 
-- name: 关闭 selinux
-  shell: "setenforce 0 && echo SELINUX=disabled > /etc/selinux/config"
+- block:
+    - name: 删除centos默认安装
+      yum: name={{ item }} state=absent
+      with_items:
+        - firewalld
+        - python-firewall
+        - firewalld-filesystem
+    - name: 安装基础软件包
+      yum: name={{ item }}  state=latest
+      with_items:
+        - jq            # 轻量JSON处理程序，安装docker查询镜像需要
+        - psmisc        # 安装psmisc 才能使用命令killall，它在keepalive的监测脚本中使用到
+        - nfs-utils     # 挂载nfs 共享文件需要 (创建基于 nfs的PV 需要)
+        - net-tools
+        - bash-completion
+    - name: 临时关闭 selinux
+      shell: "setenforce 0" 
+      failed_when: false
+    - name: 永久关闭 selinux
+      lineinfile:
+        dest: /etc/selinux/config
+        regexp: "^SELINUX"
+        line: "SELINUX=disabled"
   when: ansible_distribution == "CentOS"
-  ignore_errors: true
+
+- name: 添加 kubectl 命令自动补全
+  shell: "sed -i '/kubectl completion/d' ~/.bashrc && \
+	echo 'source <(kubectl completion bash)' >> ~/.bashrc"
 
 # 设置系统参数for k8s
 # 消除docker info 警告WARNING: bridge-nf-call-ip[6]tables is disabled
@@ -65,7 +89,6 @@
 - name: 加载br_netfilter模块
   modprobe: name=br_netfilter state=present
   ignore_errors: true
-  #shell: "modprobe br_netfilter"
   
 - name: 生效系统参数
   shell: "sysctl -p /etc/sysctl.d/95-k8s-sysctl.conf"

@@ -3,6 +3,8 @@
 
 # 清理 kube-node 相关服务
 - hosts:
+  - kube-master
+  - new-master
   - kube-node
   - new-node
   tasks:
@@ -21,10 +23,12 @@
     - "/var/lib/kube-proxy/"
     - "/etc/systemd/system/kubelet.service"
     - "/etc/systemd/system/kube-proxy.service"
-   # - "/root/local/bin/"
+    - "/root/local/kube-system/"
 
 # 清理 kube-master 相关
-- hosts: kube-master
+- hosts:
+  - kube-master
+  - new-master
   tasks:
   - name: stop kube-master service
     shell: "systemctl stop kube-apiserver kube-controller-manager kube-scheduler"
@@ -40,6 +44,8 @@
 
 # 清理集群docker服务、网络相关
 - hosts:
+  - kube-master
+  - new-master
   - kube-node
   - new-node
   tasks:
@@ -87,6 +93,11 @@
 	systemctl restart network"
     ignore_errors: true
 
+  - name: 清理calico残留路由
+    shell: "for rt in `ip route|grep bird|sed 's/blackhole//'|awk '{print $1}'`;do ip route del $rt;done;"
+    when: "CLUSTER_NETWORK == 'calico'"
+    ignore_errors: true
+
 # 清理etcd 集群相关
 - hosts: etcd
   tasks:
@@ -117,15 +128,8 @@
     with_items:
     - "/etc/haproxy"
     - "/etc/keepalived"
-    ignore_errors: true
 
-- hosts:
-  - kube-master
-  - kube-node
-  - new-node
-  - deploy
-  - etcd
-  - lb
+- hosts: all
   tasks:
   - name: 清理证书目录和文件
     file: name={{ item }} state=absent

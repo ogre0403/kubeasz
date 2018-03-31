@@ -1,6 +1,6 @@
 ## heapster
 
-本文档基于heapster 1.5.1和k8s 1.9.x，旧版文档请看[heapster 1.4.3](heapster.1.4.3.md)
++ 本文档基于heapster 1.5.1和k8s 1.9.x，旧版文档请看[heapster 1.4.3](heapster.1.4.3.md)
 
 `Heapster` 监控整个集群资源的过程：首先kubelet内置的cAdvisor收集本node节点的容器资源占用情况，然后heapster从kubelet提供的api采集节点和容器的资源占用，最后heapster 持久化数据存储到`influxdb`中（也可以是其他的存储后端,Google Cloud Monitoring等）。
 
@@ -28,7 +28,7 @@
 #### influxdb.yaml配置
 
 + influxdb 官方建议使用命令行或 HTTP API 接口来查询数据库，从 v1.1.0 版本开始默认关闭 admin UI, 从 v1.3.3 版本开始已经移除 admin UI 插件，如果你因特殊原因需要访问admin UI，请使用 v1.1.1 版本并使用configMap 配置开启它。参考[heapster 1.4.3](heapster.1.4.3.md)，具体配置yaml文件参考[influxdb v1.1.1](../../manifests/heapster/influxdb-v1.1.1/influxdb.yaml)
-
++ 如果你需要监控持久化存储支持，请参考[influxdb-with-pv.md](influxdb-with-pv.md)
 
 ### 验证
 
@@ -56,7 +56,7 @@ $ kubectl logs monitoring-influxdb-884893134-3vb6n -n kube-system
 kubectl cluster-info | grep grafana
 monitoring-grafana is running at https://x.x.x.x:6443/api/v1/namespaces/kube-system/services/monitoring-grafana/proxy
 ```
-请参考上一步 [访问dashboard](dashboard.md)同样的方式，使用证书或者密码认证，访问`https://x.x.x.x:6443/api/v1/namespaces/kube-system/services/monitoring-grafana/proxy`即可，如图可以点击[Home]选择查看 `Cluster` `Pods`的监控图形
+请参考上一步 [访问dashboard](dashboard.md)同样的方式，使用证书或者密码认证（参照hosts文件配置，默认：用户admin 密码test1234），访问`https://x.x.x.x:6443/api/v1/namespaces/kube-system/services/monitoring-grafana/proxy`即可，如图可以点击[Home]选择查看 `Cluster` `Pods`的监控图形
 
 ![grafana](../../pics/grafana.png)
 
