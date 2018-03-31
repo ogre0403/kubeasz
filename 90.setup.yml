@@ -47,6 +47,11 @@
   roles:
   - { role: kube-node, when: "DEPLOY_MODE != 'allinone'" }
 
+# 在nat-server 設定nat對外的iptable rule
+- hosts: nat-server
+  roles:
+  - { role: nat, when: "NAT == 'enable'" }
+
 # 集群网络插件部署，只能选择一种安装
 - hosts:
   - kube-master

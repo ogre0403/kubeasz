@@ -1,0 +1,5 @@
+- name: setup-nat-iptables
+  shell: "iptables -A INPUT -i {{ NAT_INIF }} -j ACCEPT \
+        && iptables -t nat -A POSTROUTING -s {{ NAT_INNET }} -o {{ NAT_EXTIF }} -j MASQUERADE \
+        && echo 1 > /proc/sys/net/ipv4/ip_forward"
+      

@@ -1,0 +1,5 @@
+- hosts:
+  - nat-server
+  roles:
+  - nat
+   

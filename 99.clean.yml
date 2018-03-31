@@ -83,6 +83,9 @@
 	&& iptables -F -t raw && iptables -X -t raw \
 	&& iptables -F -t mangle && iptables -X -t mangle"
 
+  - name: disable ip forward
+    shell: "echo 0 > /proc/sys/net/ipv4/ip_forward"
+
   - name: 清理网络
     shell: "ip link del docker0; \
 	ip link del tunl0; \

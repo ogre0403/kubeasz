@@ -2,6 +2,10 @@
 [deploy]
 192.168.1.1
 
+# NAT對外節點：在nat-server上設定nat iptable rule, 讓其他節點透過這台主機對外連線
+[nat-server]
+192.168.1.1
+
 # etcd集群请提供如下NODE_NAME、NODE_IP变量,注意etcd集群必须是1,3,5,7...奇数个节点
 [etcd]
 192.168.1.1 NODE_NAME=etcd1 NODE_IP="192.168.1.1"
@@ -91,6 +95,15 @@ ETCD_ENDPOINTS="https://192.168.1.1:2379,https://192.168.1.2:2379,https://192.16
 # 集群basic auth 使用的用户名和密码
 BASIC_AUTH_USER="admin"
 BASIC_AUTH_PASS="test1234"
+
+# 是否在nat-server上設定對外的nat rule, 啟用為enable
+NAT="disable"
+# nat-server對外的interface
+NAT_EXTIF="eth0"
+# nat-server對內的interface
+NAT_INIF="eth1"
+# nat內部 private網段
+NAT_INNET="192.168.1.0/24"
 
 # ---------附加参数--------------------
 #默认二进制文件目录
