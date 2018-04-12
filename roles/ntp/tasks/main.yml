@@ -19,4 +19,5 @@
     job : (/usr/sbin/ntpdate tock.stdtime.gov.tw && /sbin/hwclock -w) &> /dev/null
     user: root
     hour: 3
+    cron_file: ansible_sync_time
     state: present
