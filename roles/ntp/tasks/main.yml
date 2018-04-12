@@ -1,0 +1,22 @@
+- name: Set timezone
+  timezone:
+    name: "Asia/Taipei"
+
+- name: Install ntpdate
+  package:
+    name: ntpdate
+    state: present
+
+- name: Sync time initialy
+  shell: /usr/sbin/ntpdate tock.stdtime.gov.tw
+
+- name: Sync hwclock
+  shell: hwclock -w
+
+- name: add time sync crontab entry
+  cron:
+    name : sync datetime
+    job : (/usr/sbin/ntpdate tock.stdtime.gov.tw && /sbin/hwclock -w) &> /dev/null
+    user: root
+    hour: 3
+    state: present
