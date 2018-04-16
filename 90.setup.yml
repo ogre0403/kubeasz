@@ -30,7 +30,7 @@
   - kube-master
   - kube-node
   roles:
-  - docker
+  - docker-package
 
 - hosts: kube-master
   roles:
