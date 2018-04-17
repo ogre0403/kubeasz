@@ -1,0 +1,38 @@
+- name: Install required packages
+  apt: 
+    name: "{{ item }}" 
+    state: present
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+  when: ansible_distribution == "Ubuntu"
+
+
+
+- name: Add the package repositories 1
+  shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  when: ansible_distribution == "Ubuntu"
+
+    
+- name: Add the package repositories 1
+  shell: apt-key fingerprint 0EBFCD88
+  when: ansible_distribution == "Ubuntu"
+
+
+- name: Add the package repositories 1
+  shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  when: ansible_distribution == "Ubuntu"   
+
+
+- name: Install docker-ce
+  apt:
+    name: docker-ce
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+
+
+
+

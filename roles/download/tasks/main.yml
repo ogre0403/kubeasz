@@ -11,10 +11,10 @@
     dest: "{{ down_dir }}"
 
 # Download docker binary 
-- name: download docker binary
-  get_url:
-    url: "https://download.docker.com/linux/static/stable/x86_64/docker-{{ DOCKER_VER }}.tgz"
-    dest: "{{ down_dir }}"
+# - name: download docker binary
+  # get_url:
+    # url: "https://download.docker.com/linux/static/stable/x86_64/docker-{{ DOCKER_VER }}.tgz"
+    # dest: "{{ down_dir }}"
 
 # Download ca tools  
 - name: download ca tools
@@ -66,7 +66,7 @@
   with_items:
   - "{{ down_dir }}/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz" 
   - "{{ down_dir }}/kubernetes-server-linux-amd64.tar.gz"
-  - "{{ down_dir }}/docker-{{ DOCKER_VER }}.tgz"
+  # - "{{ down_dir }}/docker-{{ DOCKER_VER }}.tgz"
   - "{{ down_dir }}/cni-plugins-amd64-{{ CNI_VER }}.tgz"
  
 # copy binary files
@@ -80,7 +80,7 @@
   - "{{ down_dir }}/kubernetes/server/bin/kubelet"
   - "{{ down_dir }}/kubernetes/server/bin/kube-proxy"
   - "{{ down_dir }}/kubernetes/server/bin/kube-scheduler"
-  - "{{ down_dir }}/docker/docker*"
+  # - "{{ down_dir }}/docker/docker*"
   - "{{ down_dir }}/bridge"
   - "{{ down_dir }}/flannel"
   - "{{ down_dir }}/host-local"
